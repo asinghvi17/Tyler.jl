@@ -16,6 +16,8 @@
         <link rel="prev" href="../start/">
       
       
+        <link rel="next" href="../providers/">
+      
       <link rel="icon" href="../../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.4">
     
@@ -346,24 +348,24 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#the-animation-is-done-by-updating-the-observable-values" class="md-nav__link">
-    the animation is done by updating the Observable values
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#change-assets-your-folder-to-make-it-work-in-your-local-env" class="md-nav__link">
-    change assets-&gt;(your folder) to make it work in your local env
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
       
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../providers/" class="md-nav__link">
+        Map Tile providers
+      </a>
     </li>
   
 
@@ -408,20 +410,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#the-animation-is-done-by-updating-the-observable-values" class="md-nav__link">
-    the animation is done by updating the Observable values
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#change-assets-your-folder-to-make-it-work-in-your-local-env" class="md-nav__link">
-    change assets-&gt;(your folder) to make it work in your local env
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -449,36 +437,65 @@
 <span class="k">using</span><span class="w"> </span><span class="n">DataStructures</span><span class="o">:</span><span class="w"> </span><span class="n">CircularBuffer</span>
 <span class="k">using</span><span class="w"> </span><span class="n">TileProviders</span>
 <span class="k">using</span><span class="w"> </span><span class="n">MapTiles</span>
+<span class="k">using</span><span class="w"> </span><span class="n">Downloads</span><span class="o">:</span><span class="w"> </span><span class="n">download</span>
 
 <span class="k">function</span><span class="w"> </span><span class="n">to_web_mercator</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span><span class="n">lat</span><span class="p">)</span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Point2f</span><span class="p">(</span><span class="n">MapTiles</span><span class="o">.</span><span class="n">project</span><span class="p">((</span><span class="n">lo</span><span class="p">,</span><span class="n">lat</span><span class="p">),</span><span class="w"> </span><span class="n">MapTiles</span><span class="o">.</span><span class="n">wgs84</span><span class="p">,</span><span class="w"> </span><span class="n">MapTiles</span><span class="o">.</span><span class="n">web_mercator</span><span class="p">))</span>
 <span class="k">end</span>
 
+<span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://raw.githubusercontent.com/MakieOrg/Tyler.jl/master/docs/src/assets/data/whale_shark_128786.csv&quot;</span>
+<span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">download</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">whale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CSV</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">DataFrame</span><span class="p">)</span>
+<span class="n">lon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">whale</span><span class="p">[</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="ss">:lon</span><span class="p">]</span>
+<span class="n">lat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">whale</span><span class="p">[</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="ss">:lat</span><span class="p">]</span>
+<span class="n">steps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">points</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to_web_mercator</span><span class="o">.</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span><span class="n">lat</span><span class="p">)</span>
+
+<span class="n">lomn</span><span class="p">,</span><span class="w"> </span><span class="n">lomx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extrema</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
+<span class="n">lamn</span><span class="p">,</span><span class="w"> </span><span class="n">lamx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extrema</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+<span class="n">δlon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">lomn</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lomx</span><span class="p">)</span>
+<span class="n">δlat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">abs</span><span class="p">(</span><span class="n">lamn</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lamx</span><span class="p">)</span>
+
 <span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TileProviders</span><span class="o">.</span><span class="n">NASAGIBS</span><span class="p">(</span><span class="ss">:ViirsEarthAtNight2012</span><span class="p">)</span>
-<span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tyler</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">Rect2f</span><span class="p">(</span><span class="o">-</span><span class="mf">0.0921</span><span class="p">,</span><span class="w"> </span><span class="mf">51.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.04</span><span class="p">,</span><span class="w"> </span><span class="mf">0.025</span><span class="p">),</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+
+<span class="n">set_theme!</span><span class="p">(</span><span class="n">theme_black</span><span class="p">())</span>
+<span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tyler</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">Rect2f</span><span class="p">(</span><span class="n">Rect2f</span><span class="p">(</span><span class="n">lomn</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">δlon</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">lamn</span><span class="o">-</span><span class="n">δlat</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="n">δlon</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="n">δlat</span><span class="p">)),</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
 <span class="w">    </span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="n">min_tiles</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="n">max_tiles</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">wait</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+<span class="n">nt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<span class="n">trail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">CircularBuffer</span><span class="p">{</span><span class="kt">Point2f</span><span class="p">}(</span><span class="n">nt</span><span class="p">)</span>
+<span class="n">fill!</span><span class="p">(</span><span class="n">trail</span><span class="p">,</span><span class="w"> </span><span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="w"> </span><span class="c"># add correct values to the circular buffer</span>
+<span class="n">trail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Observable</span><span class="p">(</span><span class="n">trail</span><span class="p">)</span><span class="w"> </span><span class="c"># make it an observable</span>
+<span class="n">whale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Observable</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to_color</span><span class="p">(</span><span class="ss">:dodgerblue</span><span class="p">)</span>
+<span class="n">trailcolor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">RGBAf</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="o">.</span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="o">.</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="o">/</span><span class="n">nt</span><span class="p">)</span><span class="o">^</span><span class="mf">2.5</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="n">nt</span><span class="p">]</span><span class="w"> </span><span class="c"># fading tail</span>
+
+<span class="n">objline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lines!</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span><span class="w"> </span><span class="n">trail</span><span class="p">;</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trailcolor</span><span class="p">,</span><span class="w"> </span><span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">objscatter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scatter!</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span><span class="w"> </span><span class="n">whale</span><span class="p">;</span><span class="w"> </span><span class="n">markersize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">:orangered</span><span class="p">,</span>
+<span class="w">    </span><span class="n">strokecolor</span><span class="o">=</span><span class="ss">:grey90</span><span class="p">,</span><span class="w"> </span><span class="n">strokewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">hidedecorations!</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span>
+<span class="n">translate!</span><span class="p">(</span><span class="n">objline</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="n">translate!</span><span class="p">(</span><span class="n">objscatter</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="c">#limits!(ax, minimum(lon), maximum(lon), minimum(lat), maximum(lat))</span>
+<span class="c"># the animation is done by updating the Observable values</span>
+<span class="c"># change assets-&gt;(your folder) to make it work in your local env</span>
+<span class="n">record</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">figure</span><span class="p">,</span><span class="w"> </span><span class="n">joinpath</span><span class="p">(</span><span class="s">&quot;assets&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;whale_shark_128786.mp4&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="n">io</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">2</span><span class="o">:</span><span class="n">steps</span>
+<span class="w">        </span><span class="n">push!</span><span class="p">(</span><span class="n">trail</span><span class="p">[],</span><span class="w"> </span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<span class="w">        </span><span class="n">whale</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="w">        </span><span class="n">trail</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trail</span><span class="p">[]</span>
+<span class="w">        </span><span class="n">recordframe!</span><span class="p">(</span><span class="n">io</span><span class="p">)</span><span class="w">  </span><span class="c"># record a new frame</span>
+<span class="w">    </span><span class="k">end</span>
+<span class="k">end</span>
+<span class="n">set_theme!</span><span class="p">()</span>
 </code></pre></div>
-<p><img alt="" src="../oetqmjv.png" /></p>
-<p>Rect2f(lomn - δlon/2, lamn-δlat/2, 2δlon, 2δlat)</p>
-<p>whale = CSV.read("./examples/data/whale<em>shark</em>128786.csv", DataFrame) lon = whale[!, :lon] lat = whale[!, :lat] steps = size(lon,1)</p>
-<p>points = to<em>web</em>mercator.(lon,lat)</p>
-<p>lomn, lomx = extrema(lon) lamn, lamx = extrema(lat) δlon = abs(lomn - lomx) δlat = abs(lamn - lamx)</p>
-<p>nt = 30 trail = CircularBuffer{Point2f}(nt) fill!(trail, points[1]) # add correct values to the circular buffer trail = Observable(trail) # make it an observable whale = Observable(points[1])</p>
-<p>c = to_color(:dodgerblue) trailcolor = [RGBAf(c.r, c.g, c.b, (i/nt)^2.5) for i in 1:nt] # fading tail wait(m)</p>
-<p>objline = lines!(m.axis, trail; color = trailcolor, linewidth=3) objscatter = scatter!(m.axis, whale; markersize = 15, color = :orangered,     strokecolor=:grey90, strokewidth=1) hidedecorations!(m.axis) translate!(objline, 0, 0, 2) translate!(objscatter, 0, 0, 2) #limits!(ax, minimum(lon), maximum(lon), minimum(lat), maximum(lat))</p>
-<p><a id='the-animation-is-done-by-updating-the-Observable-values'></a></p>
-<p><a id='the-animation-is-done-by-updating-the-Observable-values-1'></a></p>
-<h2 id="the-animation-is-done-by-updating-the-observable-values">the animation is done by updating the Observable values<a class="headerlink" href="#the-animation-is-done-by-updating-the-observable-values" title="Permanent link">¤</a></h2>
-<p><a id='change-assets-(your-folder)-to-make-it-work-in-your-local-env'></a></p>
-<p><a id='change-assets-(your-folder)-to-make-it-work-in-your-local-env-1'></a></p>
-<h2 id="change-assets-your-folder-to-make-it-work-in-your-local-env">change assets-&gt;(your folder) to make it work in your local env<a class="headerlink" href="#change-assets-your-folder-to-make-it-work-in-your-local-env" title="Permanent link">¤</a></h2>
-<p>record(m.figure, joinpath("assets", "whale<em>shark</em>128786.mp4")) do io     for i in 2:steps         push!(trail[], points[i])         whale[] = points[i]         trail[] = trail[]         recordframe!(io)  # record a new frame     end end</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <p>Whale shark movements in Gulf of Mexico.   Contact person: Eric Hoffmayer</p>
 </div>
-<div class="highlight"><pre><span></span><code><span class="c"># ![type:video](./assets/whale_shark_128786.mp4)</span>
-</code></pre></div>
+<p><div class="video-container"><iframe src="../assets/whale_shark_128786.mp4" style="position: relative; width: 100%; height: 22.172vw" frameborder="0" allowfullscreen></iframe></div></p>
 <hr />
 <p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p>
 
